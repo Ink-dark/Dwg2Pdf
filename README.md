@@ -13,14 +13,13 @@
 
 ## 快速开始
 
-1. **下载转换引擎**(必需,免费):DWG 是闭源格式,转换需要 Open Design Alliance 提供的免费工具 **ODA File Converter**:
-   - 打开 https://www.opendesign.com/guestfiles/oda_file_converter
-   - 免费注册后下载 Windows x64 版本,解压
-2. **放置引擎**(任选其一):
-   - 把解压出的整个 `ODAFileConverter` 文件夹放到 `Dwg2Pdf.exe` 同目录;
-   - 或安装到默认路径(程序会自动在 `C:\Program Files\ODA\` 下查找);
-   - 或在程序里点「设置引擎…」手动选择 `ODAFileConverter.exe`
-3. 运行 `Dwg2Pdf.exe`,把 `.dwg`/`.dxf` 文件拖入窗口,点「开始转换」即可。
+**使用 GitHub Actions 构建的产物(推荐)**:产物已内置 ODA 转换引擎,解压 `Dwg2Pdf-win-x64.zip` 直接运行 `Dwg2Pdf.exe` 即可,无需任何手动准备。
+
+**自行构建时**才需要手动准备引擎(DWG 是闭源格式,转换依赖 Open Design Alliance 的免费工具 **ODA File Converter**):
+
+1. 打开 https://www.opendesign.com/guestfiles/oda_file_converter 免费下载 Windows x64 版本并解压
+2. 把解压出的 `ODAFileConverter` 文件夹放到 `Dwg2Pdf.exe` 同目录(或安装到默认路径,程序会自动在 `C:\Program Files\ODA\` 下查找;也可在程序里点「设置引擎…」手动指定)
+3. 运行 `Dwg2Pdf.exe`,把 `.dwg`/`.dxf` 文件拖入窗口,点「开始转换」即可
 
 > 引擎未就绪时,程序底部会给出提示,点「开始转换」也会弹出指引。
 
@@ -35,15 +34,19 @@
 | 打开输出目录 | 用资源管理器打开输出位置 |
 | 设置引擎 | 手动指定 ODAFileConverter.exe |
 
-## 打包发布(在任意平台交叉编译)
+## 构建与 CI
 
-项目使用 WPF + .NET 8,可在 Windows/Linux/macOS 上构建出 Windows 单文件 exe:
+项目使用 WPF + .NET 8,提交到 `main` 后 GitHub Actions 自动构建并发布产物:
+
+1. `dotnet publish -c Release` 产出 `Dwg2Pdf.exe`(win-x64 自包含单文件)
+2. 自动下载 ODA File Converter 官方 MSI 并解压,把引擎目录 `ODAFileConverter\` 打包进产物
+3. 产物整体上传为 `Dwg2Pdf-win-x64` 构件(解压即用)
+
+本地手动构建:
 
 ```bash
 dotnet publish -c Release -o publish
 ```
-
-产物位于 `publish/`(含 `Dwg2Pdf.exe` 及其运行所需的原生 DLL,整目录拷贝即可分发)。
 
 ## 源码结构
 
@@ -67,7 +70,7 @@ Dwg2Pdf/
 
 ## 常见问题
 
-- **提示「缺少转换引擎」**:按上文「快速开始」下载 ODAFileConverter 并放置/指定即可。
+- **提示「缺少转换引擎」**:使用 CI 产物不会出现;自行构建时按上文「快速开始」放置/指定引擎即可。
 - **某个文件转换失败**:文件可能损坏或 DWG 版本过新,可悬停失败项查看原因;引擎会先自动审核(audit)再转换。
 - **中文字体乱码**:取决于图纸内嵌字体,建议图纸使用 TTF 字体。
 - **A4 含义**:页面物理尺寸为 A4(210×297mm),原图内容等比缩放完整放入页面。
@@ -75,5 +78,5 @@ Dwg2Pdf/
 ## 版权与许可
 
 - 本项目源码可自由使用/修改。
-- `ODAFileConverter` 版权归 Open Design Alliance 所有,免费下载使用,请遵守其许可条款。
+- `ODAFileConverter` 版权归 Open Design Alliance 所有,免费下载使用;将引擎随产物分发时请遵守其许可条款。
 - PDF 处理使用 [PDFsharp](https://github.com/empira/PDFsharp)(MIT License)。
