@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # ODA 官方直链(免费、无需登录)。引擎版本更新时同步更新此文件名。
+  ODA_MSI_URL: https://www.opendesign.com/guestfiles/get?filename=ODAFileConverter_QT6_vc16_amd64dll_27.1.msi
+
 jobs:
   build:
     runs-on: windows-latest
@@ -17,6 +21,24 @@ jobs:
 
       - name: Publish win-x64 single-file
         run: dotnet publish -c Release -o publish
+
+      - name: Download ODA File Converter engine
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri $env:ODA_MSI_URL -OutFile engine.msi
+          Get-Item engine.msi | Select-Object Name, Length
+
+      - name: Extract engine from MSI
+        shell: pwsh
+        run: msiexec /a "$PWD\engine.msi" /qn TARGETDIR="$env:RUNNER_TEMP\oda"
+
+      - name: Bundle engine next to the app
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem "$env:RUNNER_TEMP\oda" -Recurse -Filter ODAFileConverter.exe | Select-Object -First 1
+          if (-not $exe) { throw 'engine exe not found in MSI' }
+          Copy-Item $exe.Directory.FullName -Destination "publish\ODAFileConverter" -Recurse
+          Get-Item "publish\ODAFileConverter\ODAFileConverter.exe" | Select-Object Name, Length
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
