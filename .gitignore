@@ -1,0 +1,9 @@
+# .NET / WPF
+bin/
+obj/
+publish/
+*.user
+
+# IDE
+.vs/
+.idea/

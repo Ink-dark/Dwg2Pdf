@@ -1,0 +1,104 @@
+<Window x:Class="Dwg2Pdf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DWG → A4 PDF 转换器"
+        Width="640" Height="560" MinWidth="580" MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Microsoft YaHei UI, Microsoft YaHei, SimSun" FontSize="13"
+        AllowDrop="True"
+        DragOver="OnDragOver" DragLeave="OnDragLeave" Drop="OnDrop">
+    <Grid Margin="16">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- 拖放区 -->
+            <RowDefinition Height="Auto" /> <!-- 输出目录 -->
+            <RowDefinition Height="*" />    <!-- 文件列表 -->
+            <RowDefinition Height="Auto" /> <!-- 进度 -->
+            <RowDefinition Height="Auto" /> <!-- 按钮 -->
+            <RowDefinition Height="Auto" /> <!-- 引擎状态 -->
+        </Grid.RowDefinitions>
+
+        <!-- 拖放区 -->
+        <Grid x:Name="DropZone" Height="120" MouseLeftButtonUp="DropZone_Click" Cursor="Hand">
+            <Border x:Name="DropZoneFill" Background="#F7F9FC" CornerRadius="8" />
+            <Rectangle x:Name="DropZoneOutline" Stroke="#9AA7B4" StrokeThickness="2"
+                       StrokeDashArray="5 3" RadiusX="8" RadiusY="8" />
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False">
+                <TextBlock Text="将 .dwg / .dxf 文件拖到此处" FontSize="16" HorizontalAlignment="Center" />
+                <TextBlock Text="支持批量、支持整个文件夹; 也可点击此处选择文件"
+                           FontSize="12" Foreground="Gray" Margin="0,8,0,0" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 输出目录 -->
+        <Grid Grid.Row="1" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="输出目录:" VerticalAlignment="Center" />
+            <TextBox x:Name="OutputDirBox" Grid.Column="1" Margin="8,0"
+                     VerticalContentAlignment="Center"
+                     ToolTip="留空表示保存到 DWG 所在目录" />
+            <Button x:Name="BtnBrowseOut" Grid.Column="2" Content="浏览…" Padding="12,5"
+                    Click="BrowseOutputDir_Click" />
+        </Grid>
+
+        <!-- 文件列表 -->
+        <ListView x:Name="FileList" Grid.Row="2" Margin="0,12,0,0"
+                  BorderBrush="#D8D8D8" Background="#FFFFFF">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="文件名" Width="300" DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="大小" Width="80" DisplayMemberBinding="{Binding Size}" />
+                    <GridViewColumn Header="状态" Width="130">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status}" ToolTip="{Binding Message}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#444444" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="完成">
+                                                    <Setter Property="Foreground" Value="#2E7D32" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="失败">
+                                                    <Setter Property="Foreground" Value="#C62828" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="转换中…">
+                                                    <Setter Property="Foreground" Value="#1565C0" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- 进度 -->
+        <StackPanel Grid.Row="3" Margin="0,12,0,0">
+            <ProgressBar x:Name="Progress" Height="8" Minimum="0" Maximum="1" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="#555555" Text="就绪" />
+        </StackPanel>
+
+        <!-- 按钮 -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,10,0,0">
+            <Button x:Name="BtnStart" Content="开始转换" Padding="20,6" FontWeight="SemiBold"
+                    Click="StartConvert_Click" />
+            <Button Content="清空列表" Padding="12,6" Margin="8,0,0,0" Click="ClearList_Click" />
+            <Button Content="打开输出目录" Padding="12,6" Margin="8,0,0,0" Click="OpenOutput_Click" />
+            <Button Content="设置引擎…" Padding="12,6" Margin="8,0,0,0" Click="SetEngine_Click" />
+        </StackPanel>
+
+        <!-- 引擎状态 -->
+        <TextBlock x:Name="EngineStatus" Grid.Row="5" Margin="0,10,0,0"
+                   FontSize="12" Foreground="Gray" TextWrapping="Wrap"
+                   ToolTip="转换引擎为 ODAFileConverter(免费, 由 Open Design Alliance 提供), 转换 .dwg 必需" />
+
+    </Grid>
+</Window>
